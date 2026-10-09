@@ -13,16 +13,7 @@ import {
 
 export async function buildServer() {
   const fastify = Fastify({
-    logger: process.env.NODE_ENV === "test" ? false : {
-      level: "info",
-      transport: {
-        target: "pino-pretty",
-        options: {
-          translateTime: "HH:MM:ss Z",
-          ignore: "pid,hostname",
-        },
-      },
-    },
+    logger: process.env.NODE_ENV === "test" ? false : true,
   });
 
   // Plugins
