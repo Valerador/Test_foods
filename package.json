@@ -1,0 +1,22 @@
+{
+  "name": "foodster-operations",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fullstack restaurant orders & courier delivery management platform for Foodster",
+  "workspaces": [
+    "packages/backend",
+    "packages/frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run dev --workspace=packages/backend\" \"npm run dev --workspace=packages/frontend\"",
+    "dev:backend": "npm run dev --workspace=packages/backend",
+    "dev:frontend": "npm run dev --workspace=packages/frontend",
+    "build": "npm run build --workspaces",
+    "dev-db:setup": "docker compose up -d postgres && npm run db:migrate --workspace=packages/backend && npm run db:seed --workspace=packages/backend",
+    "test-db:setup": "docker compose up -d postgres && npm run test:migrate --workspace=packages/backend",
+    "test": "npm run test --workspace=packages/backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
