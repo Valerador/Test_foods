@@ -230,10 +230,10 @@ mysterious-hertz/
  ✓ tests/orders.test.ts (3 tests)
  ✓ tests/courier-limit.test.ts (2 tests)
  ✓ tests/concurrency.test.ts (2 tests)
- ✓ tests/fsm.test.ts (5 tests)
+ ✓ tests/fsm.test.ts (6 tests)
 
  Test Files  5 passed (5)
-      Tests  19 passed (19)
+      Tests  20 passed (20)
 ```
 
 Проект полностью готов к сдаче и демонстрации.

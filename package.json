@@ -12,8 +12,8 @@
     "dev:backend": "npm run dev --workspace=packages/backend",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
     "build": "npm run build --workspaces",
-    "dev-db:setup": "docker compose up -d postgres && npm run db:migrate --workspace=packages/backend && npm run db:seed --workspace=packages/backend",
-    "test-db:setup": "docker compose up -d postgres && npm run test:migrate --workspace=packages/backend",
+    "dev-db:setup": "node scripts/setup-db.mjs dev",
+    "test-db:setup": "node scripts/setup-db.mjs test",
     "test": "npm run test --workspace=packages/backend"
   },
   "devDependencies": {

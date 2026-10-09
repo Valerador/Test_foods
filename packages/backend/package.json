@@ -10,7 +10,7 @@
     "start": "node dist/index.js",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
-    "test:migrate": "DATABASE_URL=postgresql://postgres:postgrespassword@localhost:5432/foodster_test tsx src/db/migrate.ts",
+    "test:migrate": "tsx src/db/migrate.ts",
     "test": "vitest run"
   },
   "dependencies": {
