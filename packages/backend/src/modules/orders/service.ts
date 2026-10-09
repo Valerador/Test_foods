@@ -62,9 +62,25 @@ export class OrderService {
       const trimmed = search.trim();
       // Sanitize LIKE wildcards to prevent wildcard injection
       const sanitizedLike = trimmed.replace(/[%_\\]/g, "\\$&");
-      // Using pg_trgm fuzzy matching + ILIKE for robust address search with typo tolerance
+      // Clean order ID query (strip leading # if operator copied "#8182f6ce")
+      const cleanId = trimmed.replace(/^#/, "").replace(/[%_\\]/g, "\\$&");
+      // Clean digits for phone number search
+      const digitsOnly = trimmed.replace(/\D/g, "");
+
+      const phoneFilter =
+        digitsOnly.length >= 3
+          ? sql`OR regexp_replace(COALESCE(${orders.customerPhone}, ''), '[^0-9]', '', 'g') LIKE ${`%${digitsOnly}%`}`
+          : sql``;
+
       conditions.push(
-        sql`(${orders.deliveryAddress} ILIKE ${`%${sanitizedLike}%`} ESCAPE '\\' OR similarity(${orders.deliveryAddress}, ${trimmed}) > 0.2)`
+        sql`(
+          ${orders.deliveryAddress} ILIKE ${`%${sanitizedLike}%`} ESCAPE '\\'
+          OR similarity(${orders.deliveryAddress}, ${trimmed}) > 0.2
+          OR CAST(${orders.id} AS text) ILIKE ${`%${cleanId}%`} ESCAPE '\\'
+          OR ${orders.customerPhone} ILIKE ${`%${sanitizedLike}%`} ESCAPE '\\'
+          ${phoneFilter}
+          OR ${orders.customerName} ILIKE ${`%${sanitizedLike}%`} ESCAPE '\\'
+        )`
       );
     }
 

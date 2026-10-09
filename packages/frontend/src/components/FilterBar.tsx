@@ -72,7 +72,7 @@ export function FilterBar({ filters, onChange, restaurants }: FilterBarProps) {
             type="text"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Поиск по адресу (с опечатками)..."
+            placeholder="Поиск по адресу, телефону или номеру заказа..."
             className="w-full pl-9 pr-8 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-900 focus:bg-white transition-colors"
           />
           {localSearch && (
@@ -115,7 +115,7 @@ export function FilterBar({ filters, onChange, restaurants }: FilterBarProps) {
             aria-label="Фильтр по ресторану"
             className="w-full py-2 px-3 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-900 focus:bg-white transition-colors cursor-pointer"
           >
-            <option value="">Все рестораны ({restaurants.length})</option>
+            <option value="">Все рестораны</option>
             {restaurants.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.name}
