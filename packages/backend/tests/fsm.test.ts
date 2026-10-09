@@ -24,7 +24,7 @@ describe("FSM Status Transitions & Cancellation", () => {
 
   it("API Integration: step through full valid lifecycle via PATCH /api/orders/:id/status", async () => {
     const server = getServer();
-    const { order } = await createTestFixtures();
+    const { order, courier } = await createTestFixtures();
 
     // 1. new -> accepted
     let res = await server.inject({
@@ -56,25 +56,34 @@ describe("FSM Status Transitions & Cancellation", () => {
     expect(res.json().status).toBe("ready");
     expect(res.json().version).toBe(4);
 
+    // Assign courier before moving to picked_up
+    const assignRes = await server.inject({
+      method: "PATCH",
+      url: `/api/orders/${order.id}/courier`,
+      payload: { courierId: courier.id, version: 4 },
+    });
+    expect(assignRes.statusCode).toBe(200);
+    expect(assignRes.json().version).toBe(5);
+
     // 4. ready -> picked_up
     res = await server.inject({
       method: "PATCH",
       url: `/api/orders/${order.id}/status`,
-      payload: { status: "picked_up", version: 4 },
+      payload: { status: "picked_up", version: 5 },
     });
     expect(res.statusCode).toBe(200);
     expect(res.json().status).toBe("picked_up");
-    expect(res.json().version).toBe(5);
+    expect(res.json().version).toBe(6);
 
     // 5. picked_up -> delivered
     res = await server.inject({
       method: "PATCH",
       url: `/api/orders/${order.id}/status`,
-      payload: { status: "delivered", version: 5 },
+      payload: { status: "delivered", version: 6 },
     });
     expect(res.statusCode).toBe(200);
     expect(res.json().status).toBe("delivered");
-    expect(res.json().version).toBe(6);
+    expect(res.json().version).toBe(7);
   });
 
   it("API Integration: rejects invalid transitions with HTTP 422", async () => {
@@ -92,7 +101,7 @@ describe("FSM Status Transitions & Cancellation", () => {
     expect(res.json().message).toContain("Недопустимый переход статуса");
   });
 
-  it("API Integration: cancels order before picked_up, but rejects after picked_up with HTTP 422", async () => {
+  it("API Integration: rejects picked_up without assigned courier with HTTP 422", async () => {
     const server = getServer();
     const { order } = await createTestFixtures();
 
@@ -112,17 +121,54 @@ describe("FSM Status Transitions & Cancellation", () => {
       url: `/api/orders/${order.id}/status`,
       payload: { status: "ready", version: 3 },
     });
-    await server.inject({
+
+    // Try to move to picked_up without courier
+    const res = await server.inject({
       method: "PATCH",
       url: `/api/orders/${order.id}/status`,
       payload: { status: "picked_up", version: 4 },
+    });
+    expect(res.statusCode).toBe(422);
+    expect(res.json().message).toContain("курьер не назначен");
+  });
+
+  it("API Integration: cancels order before picked_up, but rejects after picked_up with HTTP 422", async () => {
+    const server = getServer();
+    const { order, courier } = await createTestFixtures();
+
+    // Move to ready
+    await server.inject({
+      method: "PATCH",
+      url: `/api/orders/${order.id}/status`,
+      payload: { status: "accepted", version: 1 },
+    });
+    await server.inject({
+      method: "PATCH",
+      url: `/api/orders/${order.id}/status`,
+      payload: { status: "preparing", version: 2 },
+    });
+    await server.inject({
+      method: "PATCH",
+      url: `/api/orders/${order.id}/status`,
+      payload: { status: "ready", version: 3 },
+    });
+    // Assign courier
+    await server.inject({
+      method: "PATCH",
+      url: `/api/orders/${order.id}/courier`,
+      payload: { courierId: courier.id, version: 4 },
+    });
+    await server.inject({
+      method: "PATCH",
+      url: `/api/orders/${order.id}/status`,
+      payload: { status: "picked_up", version: 5 },
     });
 
     // Try to cancel picked_up order
     const cancelRes = await server.inject({
       method: "POST",
       url: `/api/orders/${order.id}/cancel`,
-      payload: { version: 5, reason: "Клиент передумал" },
+      payload: { version: 6, reason: "Клиент передумал" },
     });
 
     expect(cancelRes.statusCode).toBe(422);

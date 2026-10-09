@@ -10,7 +10,7 @@ import {
   RefreshCw,
   AlertCircle,
 } from "lucide-react";
-import type { OrderFilters, OrderStatus } from "./types.js";
+import type { OrderFilters, OrderStatus, Order } from "./types.js";
 
 export function App() {
   const queryClient = useQueryClient();
@@ -26,6 +26,7 @@ export function App() {
   });
 
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedOrderRow, setSelectedOrderRow] = useState<Order | null>(null);
   const [concurrencyError, setConcurrencyError] = useState<string | null>(null);
 
   // 1. Fetch orders list
@@ -53,11 +54,12 @@ export function App() {
     queryFn: api.getCouriers,
   });
 
-  // 4. Fetch selected order with detailed audit logs
-  const { data: selectedOrder } = useQuery({
+  // 4. Fetch selected order with detailed audit logs (with instant placeholder from table row)
+  const { data: selectedOrder, isLoading: isSelectedOrderLoading } = useQuery({
     queryKey: ["order", selectedOrderId],
     queryFn: () => (selectedOrderId ? api.getOrder(selectedOrderId) : null),
     enabled: Boolean(selectedOrderId),
+    placeholderData: selectedOrderRow || undefined,
   });
 
   // Helper to handle mutation errors (specifically 409 Concurrency Conflict)
@@ -216,7 +218,10 @@ export function App() {
         <OrdersTable
           orders={ordersData?.items || []}
           isLoading={isOrdersLoading}
-          onSelectOrder={(order) => setSelectedOrderId(order.id)}
+          onSelectOrder={(order) => {
+            setSelectedOrderId(order.id);
+            setSelectedOrderRow(order);
+          }}
           selectedOrderId={selectedOrderId}
         />
 
@@ -238,7 +243,11 @@ export function App() {
         order={selectedOrder || null}
         couriers={couriers}
         isOpen={Boolean(selectedOrderId)}
-        onClose={() => setSelectedOrderId(null)}
+        isLoading={isSelectedOrderLoading}
+        onClose={() => {
+          setSelectedOrderId(null);
+          setSelectedOrderRow(null);
+        }}
         onUpdateStatus={async (id, status, version) => {
           await updateStatusMutation.mutateAsync({ id, status, version });
         }}

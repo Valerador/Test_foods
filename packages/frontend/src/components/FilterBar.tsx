@@ -1,4 +1,5 @@
-import { Search, X, RotateCcw, ArrowUpDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, X, RotateCcw, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { OrderFilters, OrderStatus, Restaurant } from "../types.js";
 
 interface FilterBarProps {
@@ -19,9 +20,28 @@ const STATUS_OPTIONS: { value: OrderStatus | ""; label: string }[] = [
 ];
 
 export function FilterBar({ filters, onChange, restaurants }: FilterBarProps) {
+  const [localSearch, setLocalSearch] = useState(filters.search || "");
+
+  // Debounce search input (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== (filters.search || "")) {
+        onChange({ ...filters, search: localSearch, page: 1 });
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [localSearch]);
+
+  // Sync when external reset happens
+  useEffect(() => {
+    setLocalSearch(filters.search || "");
+  }, [filters.search]);
+
   const isFiltered = Boolean(filters.status || filters.restaurantId || filters.search);
 
   const handleReset = () => {
+    setLocalSearch("");
     onChange({
       ...filters,
       status: "",
@@ -31,25 +51,38 @@ export function FilterBar({ filters, onChange, restaurants }: FilterBarProps) {
     });
   };
 
+  const renderSortIndicator = (column: string) => {
+    if (filters.sortBy !== column) return null;
+    return filters.sortOrder === "desc" ? (
+      <ArrowDown className="w-3 h-3 inline-block ml-1" />
+    ) : (
+      <ArrowUp className="w-3 h-3 inline-block ml-1" />
+    );
+  };
+
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-        {/* Search by delivery address */}
+        {/* Search by delivery address with debounce */}
         <div className="relative md:col-span-5">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <Search className="w-4 h-4" />
           </div>
           <input
             type="text"
-            value={filters.search || ""}
-            onChange={(e) => onChange({ ...filters, search: e.target.value, page: 1 })}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Поиск по адресу (с опечатками)..."
             className="w-full pl-9 pr-8 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-900 focus:bg-white transition-colors"
           />
-          {filters.search && (
+          {localSearch && (
             <button
-              onClick={() => onChange({ ...filters, search: "", page: 1 })}
+              onClick={() => {
+                setLocalSearch("");
+                onChange({ ...filters, search: "", page: 1 });
+              }}
               className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+              title="Очистить поиск"
             >
               <X className="w-4 h-4" />
             </button>
@@ -108,13 +141,14 @@ export function FilterBar({ filters, onChange, restaurants }: FilterBarProps) {
                 onChange({ ...filters, sortBy: "createdAt", sortOrder: "desc" });
               }
             }}
-            className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
+            className={`inline-flex items-center px-2 py-1 rounded-md transition-colors cursor-pointer ${
               filters.sortBy === "createdAt"
                 ? "bg-slate-900 text-white font-medium"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700"
             }`}
           >
-            По дате {filters.sortBy === "createdAt" && (filters.sortOrder === "desc" ? "↓" : "↑")}
+            <span>По дате</span>
+            {renderSortIndicator("createdAt")}
           </button>
 
           <button
@@ -125,13 +159,14 @@ export function FilterBar({ filters, onChange, restaurants }: FilterBarProps) {
                 onChange({ ...filters, sortBy: "amount", sortOrder: "desc" });
               }
             }}
-            className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
+            className={`inline-flex items-center px-2 py-1 rounded-md transition-colors cursor-pointer ${
               filters.sortBy === "amount"
                 ? "bg-slate-900 text-white font-medium"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700"
             }`}
           >
-            По сумме {filters.sortBy === "amount" && (filters.sortOrder === "desc" ? "↓" : "↑")}
+            <span>По сумме</span>
+            {renderSortIndicator("amount")}
           </button>
 
           <button
@@ -142,13 +177,14 @@ export function FilterBar({ filters, onChange, restaurants }: FilterBarProps) {
                 onChange({ ...filters, sortBy: "status", sortOrder: "asc" });
               }
             }}
-            className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
+            className={`inline-flex items-center px-2 py-1 rounded-md transition-colors cursor-pointer ${
               filters.sortBy === "status"
                 ? "bg-slate-900 text-white font-medium"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700"
             }`}
           >
-            По статусу {filters.sortBy === "status" && (filters.sortOrder === "desc" ? "↓" : "↑")}
+            <span>По статусу</span>
+            {renderSortIndicator("status")}
           </button>
         </div>
 

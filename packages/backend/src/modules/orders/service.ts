@@ -60,9 +60,11 @@ export class OrderService {
     }
     if (search && search.trim().length > 0) {
       const trimmed = search.trim();
+      // Sanitize LIKE wildcards to prevent wildcard injection
+      const sanitizedLike = trimmed.replace(/[%_\\]/g, "\\$&");
       // Using pg_trgm fuzzy matching + ILIKE for robust address search with typo tolerance
       conditions.push(
-        sql`(${orders.deliveryAddress} ILIKE ${`%${trimmed}%`} OR similarity(${orders.deliveryAddress}, ${trimmed}) > 0.2)`
+        sql`(${orders.deliveryAddress} ILIKE ${`%${sanitizedLike}%`} ESCAPE '\\' OR similarity(${orders.deliveryAddress}, ${trimmed}) > 0.2)`
       );
     }
 
@@ -222,6 +224,13 @@ export class OrderService {
         );
       }
 
+      // 3.1. Business Rule: Courier MUST be assigned to transition to 'picked_up'
+      if (newStatus === "picked_up" && !current.courierId) {
+        throw new BusinessRuleError(
+          "Невозможно перевести заказ в статус 'picked_up': курьер не назначен."
+        );
+      }
+
       // 4. If moving to 'ready' or 'picked_up' and courier is already assigned, ensure courier limit is not exceeded
       if (["ready", "picked_up"].includes(newStatus) && current.courierId) {
         // Lock courier row to serialize operations on this courier
@@ -304,6 +313,20 @@ export class OrderService {
       if (current.version !== requestedVersion) {
         throw new ConcurrencyConflictError(
           `Конфликт версий: заказ был изменен другим оператором (актуальная версия ${current.version}, передана ${requestedVersion}).`
+        );
+      }
+
+      // 2.1. Check order status: cannot modify courier for delivered or cancelled orders
+      if (["delivered", "cancelled"].includes(current.status)) {
+        throw new BusinessRuleError(
+          `Нельзя изменить курьера: заказ уже находится в статусе '${current.status}'.`
+        );
+      }
+
+      // 2.2. Cannot unassign courier while order is already in transit (picked_up)
+      if (current.status === "picked_up" && !courierId) {
+        throw new BusinessRuleError(
+          "Нельзя снять курьера с заказа, который уже находится в доставке ('picked_up')."
         );
       }
 

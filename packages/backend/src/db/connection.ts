@@ -77,9 +77,14 @@ if (isLivePostgresAvailable) {
     : new PGlite({ extensions: { pg_trgm } });
 }
 
-export const db: any = isUsingPglite
-  ? drizzlePglite(pgliteInstance!, { schema })
-  : drizzlePostgres(postgresClient, { schema });
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { PgliteDatabase } from "drizzle-orm/pglite";
+
+export type AppDatabase = PgliteDatabase<typeof schema> | PostgresJsDatabase<typeof schema>;
+
+export const db: AppDatabase = isUsingPglite
+  ? (drizzlePglite(pgliteInstance!, { schema }) as AppDatabase)
+  : (drizzlePostgres(postgresClient, { schema }) as AppDatabase);
 
 /**
  * Universal raw tagged template executor that works identically on both postgres.js and PGlite

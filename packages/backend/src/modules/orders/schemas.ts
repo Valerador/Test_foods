@@ -14,7 +14,7 @@ export const orderQuerySchema = z.object({
   status: orderStatusSchema.optional(),
   restaurantId: z.string().uuid().optional(),
   courierId: z.string().uuid().optional(),
-  search: z.string().optional(),
+  search: z.string().max(255).optional(),
   sortBy: z.enum(["createdAt", "updatedAt", "amount", "status"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   page: z.coerce.number().int().min(1).default(1),

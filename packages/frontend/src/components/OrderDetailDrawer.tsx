@@ -16,6 +16,7 @@ interface OrderDetailDrawerProps {
   order: Order | null;
   couriers: Courier[];
   isOpen: boolean;
+  isLoading?: boolean;
   onClose: () => void;
   onUpdateStatus: (id: string, status: OrderStatus, version: number) => Promise<void>;
   onAssignCourier: (id: string, courierId: string | null, version: number) => Promise<void>;
@@ -29,6 +30,7 @@ export function OrderDetailDrawer({
   order,
   couriers,
   isOpen,
+  isLoading = false,
   onClose,
   onUpdateStatus,
   onAssignCourier,
@@ -42,7 +44,40 @@ export function OrderDetailDrawer({
   const [cancelReason, setCancelReason] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
 
-  if (!isOpen || !order) return null;
+  if (!isOpen) return null;
+
+  // If order is still loading from API, show drawer with skeleton immediately
+  if (isLoading && !order) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 bg-slate-900/40 transition-opacity" onClick={onClose} />
+        <div className="relative w-full max-w-xl bg-white shadow-2xl z-10 flex flex-col h-full border-l border-slate-200">
+          <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
+            <div className="space-y-2">
+              <div className="h-4 w-24 bg-slate-200 rounded-sm animate-pulse" />
+              <div className="h-5 w-48 bg-slate-200 rounded-sm animate-pulse" />
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-5 space-y-4 animate-pulse">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="h-16 bg-slate-100 rounded-lg" />
+              <div className="h-16 bg-slate-100 rounded-lg" />
+            </div>
+            <div className="h-28 bg-slate-100 rounded-lg" />
+            <div className="h-24 bg-slate-100 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) return null;
 
   // FSM Next Valid Transitions
   const NEXT_STATUS_MAP: Record<OrderStatus, { next: OrderStatus; label: string } | null> = {
@@ -65,7 +100,9 @@ export function OrderDetailDrawer({
     try {
       await onUpdateStatus(order.id, status, order.version);
     } catch (err: any) {
-      setActionError(err.message || "Ошибка обновления статуса");
+      if (err.statusCode !== 409) {
+        setActionError(err.message || "Ошибка обновления статуса");
+      }
     }
   };
 
@@ -75,7 +112,9 @@ export function OrderDetailDrawer({
       const courierId = selectedCourierId === "none" ? null : selectedCourierId || null;
       await onAssignCourier(order.id, courierId, order.version);
     } catch (err: any) {
-      setActionError(err.message || "Ошибка назначения курьера");
+      if (err.statusCode !== 409) {
+        setActionError(err.message || "Ошибка назначения курьера");
+      }
     }
   };
 
@@ -86,7 +125,9 @@ export function OrderDetailDrawer({
       setShowCancelPrompt(false);
       setCancelReason("");
     } catch (err: any) {
-      setActionError(err.message || "Ошибка отмены заказа");
+      if (err.statusCode !== 409) {
+        setActionError(err.message || "Ошибка отмены заказа");
+      }
     }
   };
 
@@ -145,7 +186,7 @@ export function OrderDetailDrawer({
           </div>
         )}
 
-        {/* Action Error banner */}
+        {/* Action Error banner (non-concurrency) */}
         {actionError && (
           <div className="bg-rose-50 border-b border-rose-200 p-3 flex items-start gap-2 text-xs text-rose-800">
             <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -155,9 +196,10 @@ export function OrderDetailDrawer({
             </div>
             <button
               onClick={() => setActionError(null)}
-              className="text-rose-600 hover:text-rose-800 font-medium cursor-pointer"
+              className="text-rose-600 hover:text-rose-800 p-1 cursor-pointer"
+              title="Закрыть уведомление"
             >
-              ✕
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
@@ -256,7 +298,9 @@ export function OrderDetailDrawer({
                       className="flex-1 py-1.5 px-2.5 bg-white border border-slate-200 rounded-md text-xs text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-slate-900 cursor-pointer disabled:opacity-50"
                     >
                       <option value="">-- Выберите курьера --</option>
-                      {order.courierId && <option value="none">Снять курьера</option>}
+                      {order.courierId && order.status !== "picked_up" && (
+                        <option value="none">Снять курьера</option>
+                      )}
                       {couriers.map((c) => {
                         const isOverLimit = c.activeOrdersCount >= 3 && isOrderActiveForCourier && c.id !== order.courierId;
                         return (
@@ -327,9 +371,10 @@ export function OrderDetailDrawer({
                     <span className="font-semibold text-rose-900">Подтверждение отмены</span>
                     <button
                       onClick={() => setShowCancelPrompt(false)}
-                      className="text-rose-500 hover:text-rose-700 cursor-pointer"
+                      className="text-rose-500 hover:text-rose-700 p-1 cursor-pointer"
+                      title="Закрыть форму отмены"
                     >
-                      ✕
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <input
