@@ -8,8 +8,28 @@ import dotenv from "dotenv";
 import net from "net";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 
 dotenv.config();
+
+function getWorkspaceDataDir(): string {
+  try {
+    let cur = path.dirname(fileURLToPath(import.meta.url));
+    while (cur && path.dirname(cur) !== cur) {
+      const pkgPath = path.join(cur, "package.json");
+      if (fs.existsSync(pkgPath)) {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+        if (pkg.workspaces) {
+          return path.resolve(cur, ".data", "foodster_db");
+        }
+      }
+      cur = path.dirname(cur);
+    }
+  } catch {
+    // fallback
+  }
+  return path.resolve(process.cwd(), ".data", "foodster_db");
+}
 
 const connectionString =
   process.env.DATABASE_URL || "postgresql://postgres:postgrespassword@localhost:5432/foodster";
@@ -66,7 +86,7 @@ if (isLivePostgresAvailable) {
   const isTest = process.env.NODE_ENV === "test";
   const dataDir = isTest
     ? undefined
-    : path.resolve(process.cwd(), ".data", "foodster_db");
+    : getWorkspaceDataDir();
 
   if (dataDir && !fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });

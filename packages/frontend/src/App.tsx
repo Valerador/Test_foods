@@ -6,10 +6,10 @@ import { OrdersTable } from "./components/OrdersTable.js";
 import { Pagination } from "./components/Pagination.js";
 import { OrderDetailDrawer } from "./components/OrderDetailDrawer.js";
 import {
-  Package,
   RefreshCw,
   AlertCircle,
 } from "lucide-react";
+import { FoodsterLogo } from "./components/FoodsterLogo.js";
 import type { OrderFilters, OrderStatus, Order } from "./types.js";
 
 export function App() {
@@ -145,12 +145,7 @@ export function App() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           {/* Logo & Product Title */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
-              <Package className="w-4 h-4" />
-            </div>
-            <span className="font-semibold text-sm text-slate-900 tracking-tight">Foodster Ops</span>
-          </div>
+          <FoodsterLogo />
 
           {/* Refresh action */}
           <div className="flex items-center gap-3">

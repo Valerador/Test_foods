@@ -117,10 +117,17 @@ export function OrdersTable({
 
                   {/* Courier */}
                   <td className="py-3.5 px-4 text-slate-700 whitespace-nowrap">
-                    {order.courier ? (
-                      <div className="flex items-center gap-1.5 font-medium">
-                        <Bike className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span>{order.courier.name}</span>
+                    {order.courier?.id ? (
+                      <div>
+                        <div className="flex items-center gap-1.5 font-medium">
+                          <Bike className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>{order.courier.name}</span>
+                        </div>
+                        {typeof order.courier.activeOrdersCount === "number" && (
+                          <div className="text-[11px] text-slate-400 pl-5">
+                            {order.courier.activeOrdersCount}/3 акт. доставок
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <span className="text-xs text-slate-400">Не назначен</span>

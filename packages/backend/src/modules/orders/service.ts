@@ -125,6 +125,12 @@ export class OrderService {
           id: couriers.id,
           name: couriers.name,
           phone: couriers.phone,
+          activeOrdersCount: sql<number>`(
+            SELECT count(*)::int
+            FROM orders o
+            WHERE o.courier_id = "couriers"."id"
+              AND o.status IN ('ready', 'picked_up')
+          )`,
         },
       })
       .from(orders)
@@ -135,8 +141,18 @@ export class OrderService {
       .limit(limit)
       .offset(offset);
 
+    const mappedItems = items.map((item: any) => ({
+      ...item,
+      courier: item.courier?.id
+        ? {
+            ...item.courier,
+            activeOrdersCount: Number(item.courier.activeOrdersCount || 0),
+          }
+        : null,
+    }));
+
     return {
-      items,
+      items: mappedItems,
       pagination: {
         total,
         page,
@@ -173,6 +189,12 @@ export class OrderService {
           id: couriers.id,
           name: couriers.name,
           phone: couriers.phone,
+          activeOrdersCount: sql<number>`(
+            SELECT count(*)::int
+            FROM orders o
+            WHERE o.courier_id = "couriers"."id"
+              AND o.status IN ('ready', 'picked_up')
+          )`,
         },
       })
       .from(orders)
@@ -204,6 +226,12 @@ export class OrderService {
 
     return {
       ...order,
+      courier: order.courier?.id
+        ? {
+            ...order.courier,
+            activeOrdersCount: Number(order.courier.activeOrdersCount || 0),
+          }
+        : null,
       auditLogs,
     };
   }

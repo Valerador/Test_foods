@@ -118,13 +118,13 @@ export async function runSeed() {
   // Distribution weights: more realistic ops distribution
   // new: 25, accepted: 25, preparing: 35, ready: 30, picked_up: 30, delivered: 40, cancelled: 15 = 200
   const statusCounts: Record<OrderStatus, number> = {
-    new: 25,
-    accepted: 25,
-    preparing: 35,
-    ready: 30,
-    picked_up: 30,
-    delivered: 40,
-    cancelled: 15,
+    new: 30,
+    accepted: 30,
+    preparing: 40,
+    ready: 18,
+    picked_up: 16,
+    delivered: 50,
+    cancelled: 16,
   };
 
   const ordersToInsert = [];

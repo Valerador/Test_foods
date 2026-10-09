@@ -13,9 +13,9 @@ export class CourierService {
         createdAt: couriers.createdAt,
         activeOrdersCount: sql<number>`(
           SELECT count(*)::int
-          FROM orders
-          WHERE orders.courier_id = ${couriers.id}
-            AND orders.status IN ('ready', 'picked_up')
+          FROM orders o
+          WHERE o.courier_id = "couriers"."id"
+            AND o.status IN ('ready', 'picked_up')
         )`,
       })
       .from(couriers)

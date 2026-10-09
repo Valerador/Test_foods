@@ -94,6 +94,8 @@ export function OrderDetailDrawer({
   const canCancel = ["new", "accepted", "preparing", "ready"].includes(order.status);
   const isTerminal = ["delivered", "cancelled"].includes(order.status);
   const isOrderActiveForCourier = ["ready", "picked_up"].includes(order.status);
+  const currentCourier = order.courierId ? (couriers.find((c) => c.id === order.courierId) || (order.courier?.id ? order.courier : null)) : null;
+  const currentCourierCount = currentCourier?.activeOrdersCount ?? order.courier?.activeOrdersCount ?? 0;
 
   const handleStatusChange = async (status: OrderStatus) => {
     setActionError(null);
@@ -272,7 +274,7 @@ export function OrderDetailDrawer({
               <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 Назначенный курьер
               </h3>
-              {order.courier && (
+              {order.courier?.id && (
                 <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-sm border border-emerald-200">
                   Назначен
                 </span>
@@ -280,12 +282,37 @@ export function OrderDetailDrawer({
             </div>
 
             <div className="bg-slate-50 border border-slate-100 rounded-lg p-3.5 space-y-3 text-xs">
-              <div className="flex items-center gap-2">
-                <Bike className="w-4 h-4 text-slate-400" />
-                <span className="text-slate-700 font-medium">
-                  {order.courier ? order.courier.name : "Курьер еще не назначен"}
-                </span>
-              </div>
+              {order.courier?.id ? (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bike className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span className="text-slate-900 font-semibold text-sm">
+                        {order.courier.name}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[11px] font-medium px-2 py-0.5 rounded-sm border ${
+                        currentCourierCount >= 3
+                          ? "bg-rose-50 text-rose-700 border-rose-200"
+                          : "bg-slate-100 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {currentCourierCount}/3 активных доставок
+                    </span>
+                  </div>
+                  {order.courier.phone && (
+                    <div className="text-slate-500 text-xs pl-6">
+                      Телефон: {order.courier.phone}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-slate-500">
+                  <Bike className="w-4 h-4 text-slate-400" />
+                  <span className="font-medium">Курьер еще не назначен</span>
+                </div>
+              )}
 
               {!isTerminal && (
                 <div className="space-y-2 pt-2 border-t border-slate-200/60">

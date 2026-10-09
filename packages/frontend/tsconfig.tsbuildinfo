@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/components/filterbar.tsx","./src/components/orderdetaildrawer.tsx","./src/components/orderstable.tsx","./src/components/pagination.tsx","./src/components/statusbadge.tsx","./src/lib/api.ts"],"version":"5.9.3"}
