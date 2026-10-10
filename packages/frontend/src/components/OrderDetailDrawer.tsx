@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   X,
   Store,
@@ -43,6 +43,12 @@ export function OrderDetailDrawer({
   const [showCancelPrompt, setShowCancelPrompt] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
+
+  // Reset local state when order or version changes (e.g. after concurrent update refresh)
+  useEffect(() => {
+    setSelectedCourierId("");
+    setActionError(null);
+  }, [order?.id, order?.version]);
 
   if (!isOpen) return null;
 
@@ -100,6 +106,7 @@ export function OrderDetailDrawer({
 
   const handleStatusChange = async (status: OrderStatus) => {
     setActionError(null);
+    onClearConcurrencyError();
     try {
       await onUpdateStatus(order.id, status, order.version);
     } catch (err: any) {
@@ -111,6 +118,7 @@ export function OrderDetailDrawer({
 
   const handleCourierAssign = async () => {
     setActionError(null);
+    onClearConcurrencyError();
     try {
       const courierId = selectedCourierId === "none" ? null : selectedCourierId || null;
       await onAssignCourier(order.id, courierId, order.version);
@@ -123,6 +131,7 @@ export function OrderDetailDrawer({
 
   const handleConfirmCancel = async () => {
     setActionError(null);
+    onClearConcurrencyError();
     try {
       await onCancelOrder(order.id, order.version, cancelReason);
       setShowCancelPrompt(false);
@@ -172,19 +181,31 @@ export function OrderDetailDrawer({
 
         {/* Concurrency conflict error banner */}
         {concurrencyError && (
-          <div className="bg-amber-50 border-b border-amber-200 p-3.5 flex items-start justify-between gap-3 text-xs text-amber-800">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold">Конфликт одновременного редактирования</p>
-                <p className="mt-0.5">{concurrencyError}</p>
+          <div className="bg-amber-50 border-l-4 border-l-amber-500 border-b border-amber-200 p-4 flex items-start justify-between gap-3 text-xs text-amber-900 shadow-xs">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm text-amber-900">
+                    Внимание: Заказ уже изменен другим оператором!
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-200/80 text-amber-800">
+                    409 Conflict
+                  </span>
+                </div>
+                <p className="text-amber-800 leading-relaxed font-normal">
+                  {concurrencyError}
+                </p>
+                <p className="text-[11px] text-amber-700 font-medium">
+                  Карточка заказа и форма выбора курьера автоматически синхронизированы с сервером.
+                </p>
               </div>
             </div>
             <button
               onClick={onClearConcurrencyError}
-              className="text-amber-700 hover:text-amber-900 font-medium shrink-0 cursor-pointer"
+              className="px-2.5 py-1 text-xs font-medium text-amber-800 hover:text-amber-950 bg-amber-100 hover:bg-amber-200/80 rounded-md transition-colors cursor-pointer shrink-0"
             >
-              Закрыть
+              Понятно
             </button>
           </div>
         )}

@@ -23,6 +23,25 @@ export class ConcurrencyConflictError extends Error {
   }
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  new: "Новый",
+  accepted: "Принят",
+  preparing: "Готовится",
+  ready: "Готов",
+  picked_up: "В доставке",
+  delivered: "Доставлен",
+  cancelled: "Отменен",
+};
+
+async function getCourierName(tx: any, courierId: string | null): Promise<string | null> {
+  if (!courierId) return null;
+  const [c] = await tx
+    .select({ name: couriers.name })
+    .from(couriers)
+    .where(eq(couriers.id, courierId));
+  return c?.name || null;
+}
+
 export class BusinessRuleError extends Error {
   public statusCode = 422;
   constructor(message: string) {
@@ -256,8 +275,14 @@ export class OrderService {
 
       // 2. Optimistic Concurrency Control check
       if (current.version !== requestedVersion) {
+        const currentCourierName = await getCourierName(tx, current.courierId);
+        const statusRu = STATUS_LABELS[current.status] || current.status;
+        const courierInfo = currentCourierName
+          ? `назначен курьер «${currentCourierName}»`
+          : "курьер не назначен";
+
         throw new ConcurrencyConflictError(
-          `Конфликт версий: заказ был изменен другим оператором (актуальная версия ${current.version}, передана ${requestedVersion}).`
+          `Конфликт версий: заказ был изменен другим оператором (актуальная версия ${current.version}, передана ${requestedVersion}). На заказ уже установлен статус «${statusRu}», ${courierInfo}. Ваша смена статуса отклонена во избежание перезаписи.`
         );
       }
 
@@ -317,7 +342,9 @@ export class OrderService {
         .returning();
 
       if (!updated) {
-        throw new ConcurrencyConflictError();
+        throw new ConcurrencyConflictError(
+          "Конфликт версий: заказ был изменен другим оператором во время выполнения операции. Пожалуйста, обновите страницу."
+        );
       }
 
       // 6. Record in Audit Log
@@ -355,8 +382,14 @@ export class OrderService {
 
       // 2. OCC check
       if (current.version !== requestedVersion) {
+        const currentCourierName = await getCourierName(tx, current.courierId);
+        const statusRu = STATUS_LABELS[current.status] || current.status;
+        const courierInfo = currentCourierName
+          ? `на заказ уже назначен курьер «${currentCourierName}»`
+          : "курьер снят с заказа или еще не назначен";
+
         throw new ConcurrencyConflictError(
-          `Конфликт версий: заказ был изменен другим оператором (актуальная версия ${current.version}, передана ${requestedVersion}).`
+          `Конфликт версий: заказ был изменен другим оператором (актуальная версия ${current.version}, передана ${requestedVersion}). В данный момент ${courierInfo} (статус «${statusRu}»). Назначение курьера отклонено во избежание перезаписи.`
         );
       }
 
@@ -429,7 +462,9 @@ export class OrderService {
         .returning();
 
       if (!updated) {
-        throw new ConcurrencyConflictError();
+        throw new ConcurrencyConflictError(
+          "Конфликт версий: заказ был изменен другим оператором во время выполнения операции. Пожалуйста, обновите страницу."
+        );
       }
 
       // 5. Audit log
@@ -479,8 +514,14 @@ export class OrderService {
 
       // 2. OCC check
       if (current.version !== requestedVersion) {
+        const currentCourierName = await getCourierName(tx, current.courierId);
+        const statusRu = STATUS_LABELS[current.status] || current.status;
+        const courierInfo = currentCourierName
+          ? `назначен курьер «${currentCourierName}»`
+          : "курьер не назначен";
+
         throw new ConcurrencyConflictError(
-          `Конфликт версий: заказ был изменен другим оператором (актуальная версия ${current.version}, передана ${requestedVersion}).`
+          `Конфликт версий: заказ был изменен другим оператором (актуальная версия ${current.version}, передана ${requestedVersion}). Текущий статус заказа «${statusRu}», ${courierInfo}. Отмена отклонена во избежание перезаписи.`
         );
       }
 
@@ -505,7 +546,9 @@ export class OrderService {
         .returning();
 
       if (!updated) {
-        throw new ConcurrencyConflictError();
+        throw new ConcurrencyConflictError(
+          "Конфликт версий: заказ был изменен другим оператором во время выполнения операции. Пожалуйста, обновите страницу."
+        );
       }
 
       // 5. Audit log

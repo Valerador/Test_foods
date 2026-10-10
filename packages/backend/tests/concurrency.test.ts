@@ -36,10 +36,11 @@ describe("Optimistic Concurrency Control (OCC)", () => {
       payload: { courierId: courier1.id, version: orderVersion }, // version 1 is now stale!
     });
 
-    // Must return HTTP 409 Conflict
+    // Must return HTTP 409 Conflict with detailed context about current courier
     expect(resA.statusCode).toBe(409);
     expect(resA.json().code).toBe("CONCURRENCY_CONFLICT");
     expect(resA.json().message).toContain("Конфликт версий");
+    expect(resA.json().message).toContain("Второй Курьер");
 
     // 4. Operator A refreshes data, gets version 2, and retries successfully
     const refreshed = await server.inject({
@@ -81,4 +82,29 @@ describe("Optimistic Concurrency Control (OCC)", () => {
     // One must be 200 OK, the other must be 409 Conflict
     expect(statusCodes).toEqual([200, 409]);
   });
+
+  it("provides detailed warning with current status when status is changed concurrently", async () => {
+    const server = getServer();
+    const { order } = await createTestFixtures();
+
+    // 1. Operator B changes status to 'accepted'
+    const resB = await server.inject({
+      method: "PATCH",
+      url: `/api/orders/${order.id}/status`,
+      payload: { status: "accepted", version: order.version },
+    });
+    expect(resB.statusCode).toBe(200);
+
+    // 2. Operator A tries to change status with stale version
+    const resA = await server.inject({
+      method: "PATCH",
+      url: `/api/orders/${order.id}/status`,
+      payload: { status: "accepted", version: order.version },
+    });
+    expect(resA.statusCode).toBe(409);
+    expect(resA.json().code).toBe("CONCURRENCY_CONFLICT");
+    expect(resA.json().message).toContain("Конфликт версий");
+    expect(resA.json().message).toContain("Принят");
+  });
 });
+

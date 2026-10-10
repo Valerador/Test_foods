@@ -8,6 +8,7 @@ import { OrderDetailDrawer } from "./components/OrderDetailDrawer.js";
 import {
   RefreshCw,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { FoodsterLogo } from "./components/FoodsterLogo.js";
 import type { OrderFilters, OrderStatus, Order } from "./types.js";
@@ -184,6 +185,32 @@ export function App() {
                 Повторить попытку
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Concurrency Conflict Banner on main screen if drawer is closed or user returned to table */}
+        {concurrencyError && !selectedOrderId && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start justify-between gap-3 text-xs text-amber-900 shadow-xs">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-sm text-amber-900">
+                  Внимание: заказ был изменен другим оператором
+                </p>
+                <p className="mt-1 text-amber-800 leading-relaxed">
+                  {concurrencyError}
+                </p>
+                <p className="mt-1 text-xs text-amber-700 font-medium">
+                  Таблица заказов актуализирована.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setConcurrencyError(null)}
+              className="px-2.5 py-1 text-xs font-medium text-amber-800 hover:text-amber-950 bg-amber-100 hover:bg-amber-200/80 rounded-md transition-colors cursor-pointer shrink-0"
+            >
+              Закрыть
+            </button>
           </div>
         )}
 
