@@ -1,5 +1,5 @@
 import { StatusBadge } from "./StatusBadge.js";
-import { Clock, Store, MapPin, Bike, ChevronRight, Inbox } from "lucide-react";
+import { Clock, Store, MapPin, Bike, ChevronRight, Inbox, RefreshCw } from "lucide-react";
 import type { Order } from "../types.js";
 
 interface OrdersTableProps {
@@ -66,18 +66,27 @@ export function OrdersTable({
               <th className="py-3 px-4">Адрес доставки</th>
               <th className="py-3 px-4 text-right">Сумма</th>
               <th className="py-3 px-4">Создан</th>
+              <th className="py-3 px-4">Обновлен</th>
               <th className="py-3 px-4 text-center">Действие</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {orders.map((order) => {
               const isSelected = order.id === selectedOrderId;
-              const dateStr = new Date(order.createdAt).toLocaleDateString("ru-RU", {
+              const createdDateStr = new Date(order.createdAt).toLocaleDateString("ru-RU", {
                 day: "2-digit",
                 month: "2-digit",
                 hour: "2-digit",
                 minute: "2-digit",
               });
+              const updatedDateStr = order.updatedAt
+                ? new Date(order.updatedAt).toLocaleDateString("ru-RU", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "—";
 
               return (
                 <tr
@@ -151,7 +160,15 @@ export function OrdersTable({
                   <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3 text-slate-400" />
-                      <span>{dateStr}</span>
+                      <span>{createdDateStr}</span>
+                    </div>
+                  </td>
+
+                  {/* Updated At */}
+                  <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
+                    <div className="flex items-center gap-1">
+                      <RefreshCw className="w-3 h-3 text-slate-400" />
+                      <span>{updatedDateStr}</span>
                     </div>
                   </td>
 

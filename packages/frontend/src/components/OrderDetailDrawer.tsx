@@ -65,7 +65,8 @@ export function OrderDetailDrawer({
             </button>
           </div>
           <div className="p-5 space-y-4 animate-pulse">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="h-16 bg-slate-100 rounded-lg" />
               <div className="h-16 bg-slate-100 rounded-lg" />
               <div className="h-16 bg-slate-100 rounded-lg" />
             </div>
@@ -209,7 +210,7 @@ export function OrderDetailDrawer({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
           {/* Main Info Grid */}
-          <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="grid grid-cols-3 gap-2.5 text-xs">
             <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg">
               <span className="text-slate-400 font-medium">Сумма заказа</span>
               <div className="text-base font-bold text-slate-900 mt-0.5">
@@ -226,6 +227,18 @@ export function OrderDetailDrawer({
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg">
+              <span className="text-slate-400 font-medium">Время изменения</span>
+              <div className="font-medium text-slate-800 mt-0.5">
+                {order.updatedAt ? new Date(order.updatedAt).toLocaleDateString("ru-RU", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }) : "—"}
               </div>
             </div>
           </div>

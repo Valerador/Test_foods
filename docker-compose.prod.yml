@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: foodster-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: foodster_secure_password
+      POSTGRES_DB: foodster
+    volumes:
+      - foodster_pgdata:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d foodster"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    networks:
+      - foodster-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: packages/backend/Dockerfile
+    container_name: foodster-backend
+    restart: always
+    environment:
+      PORT: 3001
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://postgres:foodster_secure_password@postgres:5432/foodster
+      NODE_ENV: production
+      USE_PGLITE: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - foodster-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: packages/frontend/Dockerfile
+    container_name: foodster-frontend
+    restart: always
+    ports:
+      - "3080:80"
+    depends_on:
+      - backend
+    networks:
+      - foodster-network
+
+volumes:
+  foodster_pgdata:
+
+networks:
+  foodster-network:
+    driver: bridge
