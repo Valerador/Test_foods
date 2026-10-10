@@ -58,16 +58,16 @@ export function OrdersTable({
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="bg-slate-50/75 border-b border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider">
-              <th className="py-3 px-4">ID</th>
-              <th className="py-3 px-4">Статус</th>
-              <th className="py-3 px-4">Клиент</th>
-              <th className="py-3 px-4">Ресторан</th>
-              <th className="py-3 px-4">Курьер</th>
-              <th className="py-3 px-4">Адрес доставки</th>
-              <th className="py-3 px-4 text-right">Сумма</th>
-              <th className="py-3 px-4">Создан</th>
-              <th className="py-3 px-4">Обновлен</th>
-              <th className="py-3 px-4 text-center">Действие</th>
+              <th className="py-3 px-3">ID</th>
+              <th className="py-3 px-3">Статус</th>
+              <th className="py-3 px-3">Клиент</th>
+              <th className="py-3 px-3">Ресторан</th>
+              <th className="py-3 px-3">Курьер</th>
+              <th className="py-3 px-3">Адрес доставки</th>
+              <th className="py-3 px-3 text-right">Сумма</th>
+              <th className="py-3 px-3">Создан</th>
+              <th className="py-3 px-3">Обновлен</th>
+              <th className="py-3 px-3 text-center">Действие</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -99,17 +99,17 @@ export function OrdersTable({
                   }`}
                 >
                   {/* ID */}
-                  <td className="py-3.5 px-4 font-mono text-xs text-slate-500">
+                  <td className="py-3 px-3 font-mono text-xs text-slate-500">
                     #{order.id.slice(0, 8)}
                   </td>
 
                   {/* Status */}
-                  <td className="py-3.5 px-4 whitespace-nowrap">
+                  <td className="py-3 px-3 whitespace-nowrap">
                     <StatusBadge status={order.status} size="sm" />
                   </td>
 
                   {/* Customer */}
-                  <td className="py-3.5 px-4">
+                  <td className="py-3 px-3">
                     <div className="font-medium text-slate-900">{order.customerName}</div>
                     {order.customerPhone && (
                       <div className="text-xs text-slate-500">{order.customerPhone}</div>
@@ -117,7 +117,7 @@ export function OrdersTable({
                   </td>
 
                   {/* Restaurant */}
-                  <td className="py-3.5 px-4 text-slate-700 whitespace-nowrap">
+                  <td className="py-3 px-3 text-slate-700 whitespace-nowrap">
                     <div className="flex items-center gap-1.5">
                       <Store className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span>{order.restaurant?.name || "Ресторан"}</span>
@@ -125,7 +125,7 @@ export function OrdersTable({
                   </td>
 
                   {/* Courier */}
-                  <td className="py-3.5 px-4 text-slate-700 whitespace-nowrap">
+                  <td className="py-3 px-3 text-slate-700 whitespace-nowrap">
                     {order.courier?.id ? (
                       <div>
                         <div className="flex items-center gap-1.5 font-medium">
@@ -144,7 +144,7 @@ export function OrdersTable({
                   </td>
 
                   {/* Address */}
-                  <td className="py-3.5 px-4 text-slate-600 max-w-[240px] truncate" title={order.deliveryAddress}>
+                  <td className="py-3 px-3 text-slate-600 max-w-[200px] truncate" title={order.deliveryAddress}>
                     <div className="flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="truncate">{order.deliveryAddress}</span>
@@ -152,12 +152,12 @@ export function OrdersTable({
                   </td>
 
                   {/* Amount */}
-                  <td className="py-3.5 px-4 text-right font-medium text-slate-900 whitespace-nowrap">
+                  <td className="py-3 px-3 text-right font-medium text-slate-900 whitespace-nowrap">
                     {Number(order.amount).toLocaleString("ru-RU")} ₽
                   </td>
 
                   {/* Created At */}
-                  <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
+                  <td className="py-3 px-3 text-xs text-slate-500 whitespace-nowrap">
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3 text-slate-400" />
                       <span>{createdDateStr}</span>
@@ -165,7 +165,7 @@ export function OrdersTable({
                   </td>
 
                   {/* Updated At */}
-                  <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
+                  <td className="py-3 px-3 text-xs text-slate-500 whitespace-nowrap">
                     <div className="flex items-center gap-1">
                       <RefreshCw className="w-3 h-3 text-slate-400" />
                       <span>{updatedDateStr}</span>
@@ -173,7 +173,7 @@ export function OrdersTable({
                   </td>
 
                   {/* Action */}
-                  <td className="py-3.5 px-4 text-center">
+                  <td className="py-3 px-3 text-center">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

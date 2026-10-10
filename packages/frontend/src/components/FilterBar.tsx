@@ -147,8 +147,26 @@ export function FilterBar({ filters, onChange, restaurants }: FilterBarProps) {
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700"
             }`}
           >
-            <span>По дате</span>
+            <span>По созданию</span>
             {renderSortIndicator("createdAt")}
+          </button>
+
+          <button
+            onClick={() => {
+              if (filters.sortBy === "updatedAt") {
+                onChange({ ...filters, sortOrder: filters.sortOrder === "desc" ? "asc" : "desc" });
+              } else {
+                onChange({ ...filters, sortBy: "updatedAt", sortOrder: "desc" });
+              }
+            }}
+            className={`inline-flex items-center px-2 py-1 rounded-md transition-colors cursor-pointer ${
+              filters.sortBy === "updatedAt"
+                ? "bg-slate-900 text-white font-medium"
+                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+            }`}
+          >
+            <span>По обновлению</span>
+            {renderSortIndicator("updatedAt")}
           </button>
 
           <button
