@@ -5,12 +5,12 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY packages/backend/package.json ./packages/backend/
 
-RUN npm ci --workspace=@foodster/backend
+RUN npm ci --workspace=@orderflow/backend
 
 COPY packages/backend/tsconfig.json ./packages/backend/
 COPY packages/backend/src ./packages/backend/src
 
-RUN npm run build --workspace=@foodster/backend
+RUN npm run build --workspace=@orderflow/backend
 
 FROM node:20-alpine AS runner
 
@@ -23,7 +23,7 @@ ENV HOST=0.0.0.0
 COPY package.json package-lock.json* ./
 COPY packages/backend/package.json ./packages/backend/
 
-RUN npm ci --omit=dev --workspace=@foodster/backend
+RUN npm ci --omit=dev --workspace=@orderflow/backend
 
 COPY --from=builder /app/packages/backend/dist ./packages/backend/dist
 

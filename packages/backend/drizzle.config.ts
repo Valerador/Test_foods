@@ -5,6 +5,6 @@ export default defineConfig({
   out: "./src/db/migrations",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL || "postgresql://postgres:postgrespassword@localhost:5432/foodster",
+    url: process.env.DATABASE_URL || "postgresql://postgres:postgrespassword@localhost:5432/orderflow",
   },
 });

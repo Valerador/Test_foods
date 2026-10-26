@@ -5,11 +5,11 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY packages/frontend/package.json ./packages/frontend/
 
-RUN npm ci --workspace=@foodster/frontend
+RUN npm ci --workspace=@orderflow/frontend
 
 COPY packages/frontend ./packages/frontend
 
-RUN npm run build --workspace=@foodster/frontend
+RUN npm run build --workspace=@orderflow/frontend
 
 FROM nginx:1.27-alpine AS runner
 

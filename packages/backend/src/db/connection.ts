@@ -20,7 +20,7 @@ function getWorkspaceDataDir(): string {
       if (fs.existsSync(pkgPath)) {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
         if (pkg.workspaces) {
-          return path.resolve(cur, ".data", "foodster_db");
+          return path.resolve(cur, ".data", "orderflow_db");
         }
       }
       cur = path.dirname(cur);
@@ -28,11 +28,11 @@ function getWorkspaceDataDir(): string {
   } catch {
     // fallback
   }
-  return path.resolve(process.cwd(), ".data", "foodster_db");
+  return path.resolve(process.cwd(), ".data", "orderflow_db");
 }
 
 const connectionString =
-  process.env.DATABASE_URL || "postgresql://postgres:postgrespassword@localhost:5432/foodster";
+  process.env.DATABASE_URL || "postgresql://postgres:postgrespassword@localhost:5432/orderflow";
 
 function isPostgresReachable(port = 5432, host = "127.0.0.1"): Promise<boolean> {
   return new Promise((resolve) => {

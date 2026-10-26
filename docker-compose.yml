@@ -1,12 +1,12 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: foodster-postgres
+    container_name: orderflow-postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespassword
-      POSTGRES_DB: foodster
+      POSTGRES_DB: orderflow
     ports:
       - "5432:5432"
     volumes:

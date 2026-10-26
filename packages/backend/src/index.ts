@@ -30,7 +30,7 @@ async function start() {
 
     const server = await buildServer();
     await server.listen({ port, host });
-    console.log(`Foodster Backend listening on http://${host}:${port}`);
+    console.log(`OrderFlow Backend listening on http://${host}:${port}`);
   } catch (err) {
     console.error("Failed to start server:", err);
     process.exit(1);

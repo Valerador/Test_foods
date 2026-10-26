@@ -1,8 +1,8 @@
 {
-  "name": "foodster-operations",
+  "name": "orderflow-operations",
   "version": "1.0.0",
   "private": true,
-  "description": "Fullstack restaurant orders & courier delivery management platform for Foodster",
+  "description": "Fullstack restaurant orders & courier delivery management platform (OrderFlow)",
   "workspaces": [
     "packages/backend",
     "packages/frontend"
